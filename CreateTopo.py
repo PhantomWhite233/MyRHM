@@ -55,7 +55,6 @@ def create_networkx_graph():
 
     return G
 
-
 def main():
     mytopo = MyTopo()
 

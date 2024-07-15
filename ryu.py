@@ -30,10 +30,16 @@ class MyController(app_manager.RyuApp):
         self.paths = defaultdict(lambda: defaultdict(list))  # 存储原地址到目的地址的路径
         self.graph = nx.read_gml('MyTopo.gml')  # 读取网络拓扑结构
         
-        # 初始化ip到host的映射
-        for v, data in self.graph.nodes(data=True):
-            if data['type'] == 'host':
-                self.ip2host[data['ip']] = v
+        # 测试用：真实ip映射到虚拟ip
+        for i in range(4):
+            real_ip = self.real_ips[i]
+            virtual_ip = self.virtual_ips[i]
+            self.real2virtual["real_ip"] = virtual_ip
+
+        # # 初始化ip到host的映射
+        # for v, data in self.graph.nodes(data=True):
+        #     if data['type'] == 'host':
+        #         self.ip2host[data['ip']] = v
 
     # 函数意义：
     #       清空对应交换机流表
@@ -153,64 +159,27 @@ class MyController(app_manager.RyuApp):
         
         # 处理ICMP数据包
         if icmp_pkt:
-            #处理数据包内容
-            request = icmp_pkt.data.data.decode()  # 将ICMP数据包的负载部分解码为字符串
-            request = ''.join(filter(str.isdigit, request))  # 将ICMP数据包负载部分的数字过滤出来
-            request = int(request)  # 将上述数字将转换为int类型
-            print("---icmpdata:",request)
+            # 制定icmp信息类型：0-Echo Reply (ping reply)，3-Destination Unreachable，
+            #                  8-Echo Request (ping request)，11-Time Exceeded
+            icmp_type = icmp_pkt.type_
+            # 对于Echo Reply和Echo Request信息，都会包含一个echo对象，
+            # 这个对象会有以下属性：
+            #   id_ - 标识符，用于匹配 Echo Request 和 Echo Reply
+            #   seq - 序列号，用于匹配请求和回复
+            #   data - 实际的负载数据。
+            icmp_data = icmp_pkt.data
 
-            # 处理转发数据包逻辑
-            # 如果请求数据的值[1,49]则将数据包发送到h2
-            if (1<=request<=49):
-                print("send to 2")
-                # 配置s1的流表，将数据包转发到h2
-                if datapath.id == 1:
-                    # 如果进入端口为eth1，将数据包转发至eth2（-h2）
-                    if in_port==1:
-                        print("s1----inport:",in_port)
-                        actions = [parser.OFPActionOutput(2)]
-                        out_port = 2
-                    # 如果进入端口为eth2，将数据包转发至eth1（-h1）
-                    if in_port==2:
-                        print("s1----inport:",in_port)
-                        actions = [parser.OFPActionOutput(1)]
-                        out_port = 1                    
-                    match = parser.OFPMatch(in_port=in_port)  # 创建一个匹配对象，指定匹配条件为上述端口
-                    self.add_flow(datapath, 1,match, actions)  # 最终添加流表项
-            # 如果请求数据的值[50,100]则将数据包发送到h4
-            if (50<=request<=100):
-                print("send to 4")
-                # 配置s1的流表
-                if datapath.id == 1:
-                    actions = [parser.OFPActionOutput(10)]  # 将数据包输出端口设置为eth10（-s2）
-                    match = parser.OFPMatch(in_port=in_port)  # 创建一个匹配对象，指定匹配条件为上述端口
-                    self.add_flow(datapath, 1,match, actions)  # 最终添加流表项
-                # 配置s2的流表
-                elif datapath.id == 2:
-                    # 如果进入端口为eth11，将数据包转发至eth12（-s3）
-                    if in_port == 11:
-                        print("s2----inport:",in_port)
-                        actions = [parser.OFPActionOutput(12)]
-                        out_port = 12
-                    # 如果进入端口为eth12，将数据包转发至eth11（-s1）
-                    if in_port==12:
-                        print("s2----inport:",in_port)
-                        actions = [parser.OFPActionOutput(11)]
-                        out_port = 11
-                    match = parser.OFPMatch(in_port=in_port)  # 创建一个匹配对象，指定匹配条件为上述端口
-                    self.add_flow(datapath, 1,match, actions)  # 最终添加流表项
-                # 配置s3的流表
-                elif datapath.id == 3:
-                    print("s3----inport:",in_port)
-                    actions = [parser.OFPActionOutput(1)]  # 将数据包输出端口设置为eth1（-h4）
-                    match = parser.OFPMatch(in_port=in_port)  # 创建一个匹配对象，指定匹配条件为上述端口
-                    self.add_flow(datapath, 1,match, actions)  # 最终添加流表项
+            print("type:", icmp_type)
+            print("data:", icmp_data)
 
         # 处理ARP数据包
         if arp_pkt:
             # 提取ARP包信息
             arp_src = arp_pkt.src_ip
             arp_dst = arp_pkt.dst_ip
+
+            print("src:", arp_src, " dst:", arp_pkt)
+
 
             # 获取路径
             path = self.get_path(self.ip2host[arp_src], self.ip2host[arp_dst])
