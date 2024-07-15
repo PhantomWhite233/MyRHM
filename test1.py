@@ -33,29 +33,29 @@ class MyTopo(Topo):
         self.addLink(switch1, switch2, port1=10, port2=11)
         self.addLink(switch2, switch3, port1=12, port2=13)
 
-        self.hosts.extend([Host1, Host2, Host3, Host4])
-        self.switches.extend([switch1, switch2, switch3])
-        self.links.extend(
-            [
-                (Host1, switch1),
-                (Host2, switch1),
-                (Host3, switch2),
-                (Host4, switch3),
-                (switch1, switch2),
-                (switch2, switch3),
-            ]
-        )
 
-
-def create_networkx_graph(topo):
+def create_networkx_graph():
     G = nx.Graph()
 
-    for host in topo.hosts:
-        G.add_node(host, type="host")
-    for switch in topo.switches:
-        G.add_node(switch, type="switch")
-    for link in topo.links:
-        G.add_edge(*link)
+    # 主机
+    for i in range(1,5):
+        G.add_node(f"h{i}", {"ip":f"10.0.0.{i}", "mac":f"00:00:00:00:00:0{i}"})
+    # 交换机
+    for i in range(1, 4):
+        G.add_node(f"s{i}")
+    # 链接
+    G.add_edge("h1", "s1", 1)
+    G.add_edge("h2", "s1", 1)
+    G.add_edge("h3", "s2", 1)
+    G.add_edge("h4", "s3", 1)
+    G.add_edge("s1", "h1", 1)
+    G.add_edge("s1", "h2", 2)
+    G.add_edge("s1", "s2", 10)
+    G.add_edge("s2", "s1", 11)
+    G.add_edge("s2", "h3", 1)
+    G.add_edge("s2", "s3", 12)
+    G.add_edge("s3", "s2", 13)
+    G.add_edge("s3", "h4", 1)
 
     return G
 
@@ -64,7 +64,7 @@ def main():
     mytopo = MyTopo()
 
     # 创建拓扑图
-    G = create_networkx_graph(mytopo)
+    G = create_networkx_graph()
     nx.write_gml(G, "MyTopo.gml")
     
     # # 创建mininet网络
