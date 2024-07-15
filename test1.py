@@ -39,7 +39,7 @@ def create_networkx_graph():
 
     # 主机
     for i in range(1,5):
-        G.add_node(f"h{i}", {"ip":f"10.0.0.{i}", "mac":f"00:00:00:00:00:0{i}"})
+        G.add_node(f"h{i}", ip=f"10.0.0.{i}", mac=f"00:00:00:00:00:0{i}")
     # 交换机
     for i in range(1, 4):
         G.add_node(f"s{i}")
