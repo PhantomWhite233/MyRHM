@@ -209,7 +209,7 @@ class MyController(app_manager.RyuApp):
                 self.add_flow(datapath, 1, match, actions)  # 添加流表项
 
         # 处理ipv4数据包
-        if ipv4:
+        if ipv4_pkt:
             # 提取数据包发送方和接收方ip地址
             ipv4_src = ipv4_pkt.src
             ipv4_dst = ipv4_pkt.dst
