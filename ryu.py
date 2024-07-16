@@ -219,29 +219,6 @@ class MyController(app_manager.RyuApp):
             ipv4_src = ipv4_pkt.src
             ipv4_dst = ipv4_pkt.dst
 
-            print("This is ipv4")
-            print("src:", ipv4_src, " dst:", ipv4_dst)
-
-            # 先进行真实ip和虚拟ip的转化
-            # 获取整个路径
-            path = self.get_path(self.real2host[ipv4_src], self.real2host[ipv4_dst])
-            path_length = len(path)
-            cur_index = path.index(dpid)
-            print("path_length: %s. cur_index: %s" %(path_length, cur_index))
-            # 如果是路径上第一个交换机，此时一定是真实ip，所以做真实ip向虚拟ip的转化
-            if cur_index == 1:
-                actions.append(parser.OFPActionSetField(ipv4_src=self.real2virtual[ipv4_src]))   # 修改表头参数
-                actions.append(parser.OFPActionSetField(ipv4_dst=self.real2virtual[ipv4_dst]))
-                print('Change SRC: %s(Real) -> %s(Virtual)' % (ipv4_src, self.real2virtual[ipv4_src]))
-                print('Change DST: %s(Real) -> %s(Virtual)' % (ipv4_dst, self.real2virtual[ipv4_dst]))
-            # 如果是路径上最后一个交换机，此时一定是虚拟ip，所以做虚拟ip向真实ip的转化
-            if cur_index == path_length - 2:
-                actions.append(parser.OFPActionSetField(ipv4_src=self.virtual2real[ipv4_src]))
-                actions.append(parser.OFPActionSetField(ipv4_dst=self.virtual2real[ipv4_dst]))
-                print('Change SRC: %s(Virtual) -> %s(Real)' % (ipv4_src, self.real_to_virtual[ipv4_src]))
-                print('Change DST: %s(Virtual) -> %s(Real)' % (ipv4_dst, self.real_to_virtual[ipv4_dst]))
-
-            # 然后进行转发工作的安排
             # 先将ip锁定为真实ip
             real_src = ipv4_src
             real_dst = ipv4_dst
@@ -249,7 +226,40 @@ class MyController(app_manager.RyuApp):
                 real_src = self.virtual_to_real[ipv4_src]
             if ipv4_dst in self.virtual_ip:
                 real_dst = self.virtual_to_real[ipv4_dst]
-            # 然后查找下一跳和跳出端口
+
+            print("This is ipv4")
+            print("src:", real_src, " dst:", real_dst)
+
+            # 先进行真实ip和虚拟ip的转化
+            # 获取整个路径
+            path = self.get_path(self.real2host[real_src], self.real2host[real_dst])
+            path_length = len(path)
+            cur_index = path.index(dpid)
+            print("path_length: %s. cur_index: %s" %(path_length, cur_index))
+            res_src = real_src  # 最终的发送方ip地址
+            res_dst = real_dst  # 最终的接收方ip地址
+            # 如果是路径上第一个交换机，直接做一次真实ip向虚拟ip的转化
+            if cur_index == 1:
+                # 真实ip到虚拟ip的转化
+                res_src = self.real2virtual[res_src]
+                res_dst = self.real2virtual[res_dst]
+                # 修改表头参数
+                actions.append(parser.OFPActionSetField(res_src))
+                actions.append(parser.OFPActionSetField(res_dst))
+                print('Change SRC: %s(Real) -> %s(Virtual)' % (real_src, res_src))
+                print('Change DST: %s(Real) -> %s(Virtual)' % (real_dst, res_dst))
+            # 如果是路径上最后一个交换机，直接做一次虚拟ip向真实ip的转化
+            if cur_index == path_length - 2:
+                # 虚拟ip到真实ip的转化
+                res_src = self.virtual2real[res_src]
+                res_dst = self.virtual2real[res_dst]
+                # 修改表头参数
+                actions.append(parser.OFPActionSetField(res_src))
+                actions.append(parser.OFPActionSetField(res_dst))
+                print('Change SRC: %s(Virtual) -> %s(Real)' % (self.real2virtual[res_src], res_src))
+                print('Change DST: %s(Virtual) -> %s(Real)' % (self.real2virtual[res_dst], res_dst))
+
+            # 然后进行转发工作的安排，查找下一跳和跳出端口
             next_hop = path[path.index(dpid) + 1]
             out_port = self.graph[dpid][next_hop]['port']
             print('Next Hop: %s, Out Port: %s' % (next_hop, out_port))
