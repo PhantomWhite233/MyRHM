@@ -221,9 +221,9 @@ class MyController(app_manager.RyuApp):
             real_src = ipv4_src
             real_dst = ipv4_dst
             if ipv4_src in self.virtual_ips:
-                real_src = self.virtual_to_real[ipv4_src]
+                real_src = self.virtual2real[ipv4_src]
             if ipv4_dst in self.virtual_ips:
-                real_dst = self.virtual_to_real[ipv4_dst]
+                real_dst = self.virtual2real[ipv4_dst]
 
             print("src:", real_src, " dst:", real_dst)
 
