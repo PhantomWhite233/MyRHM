@@ -167,20 +167,20 @@ class MyController(app_manager.RyuApp):
         if ipv6_pkt:
             return
         
-        # 处理ICMP数据包
-        if icmp_pkt:
-            # 制定icmp信息类型：0-Echo Reply (ping reply)，3-Destination Unreachable，
-            #                  8-Echo Request (ping request)，11-Time Exceeded
-            icmp_type = icmp_pkt.type_
-            # 对于Echo Reply和Echo Request信息，都会包含一个echo对象，
-            # 这个对象会有以下属性：
-            #   id_ - 标识符，用于匹配 Echo Request 和 Echo Reply
-            #   seq - 序列号，用于匹配请求和回复
-            #   data - 实际的负载数据。
-            icmp_data = icmp_pkt.data
+        # # 处理ICMP数据包
+        # if icmp_pkt:
+        #     # 制定icmp信息类型：0-Echo Reply (ping reply)，3-Destination Unreachable，
+        #     #                  8-Echo Request (ping request)，11-Time Exceeded
+        #     icmp_type = icmp_pkt.type_
+        #     # 对于Echo Reply和Echo Request信息，都会包含一个echo对象，
+        #     # 这个对象会有以下属性：
+        #     #   id_ - 标识符，用于匹配 Echo Request 和 Echo Reply
+        #     #   seq - 序列号，用于匹配请求和回复
+        #     #   data - 实际的负载数据。
+        #     icmp_data = icmp_pkt.data
 
-            print("type:", icmp_type)
-            print("data:", icmp_data)
+        #     print("type:", icmp_type)
+        #     print("data:", icmp_data)
 
         # 处理ARP数据包
         if arp_pkt:
