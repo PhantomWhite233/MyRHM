@@ -244,8 +244,8 @@ class MyController(app_manager.RyuApp):
                 res_src = self.real2virtual[res_src]
                 res_dst = self.real2virtual[res_dst]
                 # 修改表头参数
-                actions.append(parser.OFPActionSetField(res_src))
-                actions.append(parser.OFPActionSetField(res_dst))
+                actions.append(parser.OFPActionSetField(ipv4_src=res_src))
+                actions.append(parser.OFPActionSetField(ipv4_dst=res_dst))
                 print('Change SRC: %s(Real) -> %s(Virtual)' % (real_src, res_src))
                 print('Change DST: %s(Real) -> %s(Virtual)' % (real_dst, res_dst))
             # 如果是路径上最后一个交换机，直接做一次虚拟ip向真实ip的转化
@@ -254,8 +254,8 @@ class MyController(app_manager.RyuApp):
                 res_src = self.virtual2real[res_src]
                 res_dst = self.virtual2real[res_dst]
                 # 修改表头参数
-                actions.append(parser.OFPActionSetField(res_src))
-                actions.append(parser.OFPActionSetField(res_dst))
+                actions.append(parser.OFPActionSetField(ipv4_src=res_src))
+                actions.append(parser.OFPActionSetField(ipv4_dst=res_dst))
                 print('Change SRC: %s(Virtual) -> %s(Real)' % (self.real2virtual[res_src], res_src))
                 print('Change DST: %s(Virtual) -> %s(Real)' % (self.real2virtual[res_dst], res_dst))
 
