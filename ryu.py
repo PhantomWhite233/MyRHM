@@ -142,12 +142,12 @@ class MyController(app_manager.RyuApp):
         # 初始化信息
         msg = ev.msg  # 提取信息
         datapath = msg.datapath  # 提取交换机对象
-        dpid = datapath.id  # 得到交换机id
+        dpid = 's%s' % datapath.id  # 得到交换机id
         ofproto = datapath.ofproto  # 协议对象
         parser = datapath.ofproto_parser  # 解析器对象
         in_port = msg.match['in_port']  # 消息来的交换机的端口，即数据包进入交换机的端口
 
-        print("This is s%s", dpid)
+        print("This is %s" %dpid)
 
         # 解析数据包，提取ARP、IPv4、IPv6、LLDP、ICMP、Ethernet协议的数据包
         pkt = packet.Packet(msg.data)
@@ -196,7 +196,7 @@ class MyController(app_manager.RyuApp):
             
             # 确定当前交换机在路径中的位置并找到下一跳
             if dpid in path:
-                index = path.index('s%s' % dpid)  # 获取当前交换机在路径中的位置索引
+                index = path.index(dpid)  # 获取当前交换机在路径中的位置索引
                 next_hop = path[path.index(dpid) + 1]  # 下一跳
                 out_port = self.graph[dpid][next_hop]['port']  # 获取去往下一跳交换机的本交换机端口号
                 print('ARP Packet %s -> %s : port %s' % (path[index], path[index + 1], out_port))
@@ -221,7 +221,7 @@ class MyController(app_manager.RyuApp):
             # 获取整个路径
             path = self.get_path(self.real2host[ipv4_src], self.real2host[ipv4_dst])
             path_length = len(path)
-            cur_index = path.index('s%s' % dpid)
+            cur_index = path.index(dpid)
             print("path_length: %s. cur_index: %s", path_length, cur_index)
             # 如果是路径上第一个交换机，此时一定是真实ip，所以做真实ip向虚拟ip的转化
             if cur_index == 1:
