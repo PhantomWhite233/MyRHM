@@ -27,19 +27,21 @@ class MyController(app_manager.RyuApp):
         self.virtual2real = []  # 虚拟地址到真实地址的映射
         self.real2host = {}  # 真实ip和主机的映射
         
-        self.paths = defaultdict(lambda: defaultdict(list))  # 存储原地址到目的地址的路径
         self.graph = nx.read_gml('MyTopo.gml')  # 读取网络拓扑结构
+        self.paths = defaultdict(lambda: defaultdict(list))  # 存储原地址到目的地址的路径
         
-        # 测试用：真实ip映射到虚拟ip
+        
+        # 测试用：真实ip和虚拟ip的映射
         for i in range(4):
             real_ip = self.real_ips[i]
             virtual_ip = self.virtual_ips[i]
             self.real2virtual["real_ip"] = virtual_ip
+            self.real2virtual["virtual_ip"] = real_ip
 
-        # # 初始化ip到host的映射
-        # for v, data in self.graph.nodes(data=True):
-        #     if data['type'] == 'host':
-        #         self.ip2host[data['ip']] = v
+        # 测试用：初始化ip到host的映射
+        for v, data in self.graph.nodes(data=True):
+            if data['type'] == 'host':
+                self.ip2host[data['ip']] = v
 
     # 函数意义：
     #       清空对应交换机流表
@@ -95,7 +97,7 @@ class MyController(app_manager.RyuApp):
         datapath.send_msg(mod)  # 发送流表修改信息
 
     # 函数意义：
-    #       计算路由路径
+    #       计算路径
     # 参数说明：
     #       src-源节点
     #       dst-目的节点
@@ -104,8 +106,14 @@ class MyController(app_manager.RyuApp):
         if len(self.paths[src][dst]) == 0:
             self.paths[src][dst] = nx.shortest_path(self.graph, src, dst) # 直接调用networkx中函数计算最短路径
 
-        print('Path %s -> %s: %s' % (src, dst, self.paths[src][dst]))
+        print('shortPath: %s -> %s: %s' % (src, dst, self.paths[src][dst]))
         return self.paths[src][dst]
+    
+    # 函数意义：
+    #       计算
+    def is_connect(self, u, v):
+        if not self.edges[u][v]:
+            self.edges[u][v] = self.graph.has_edge(u, v)
 
     # 触发时机：
     #       在交换机和控制器完成握手时触发，此时控制器正处于配置交换机状态
@@ -138,6 +146,8 @@ class MyController(app_manager.RyuApp):
         ofproto = datapath.ofproto  # 协议对象
         parser = datapath.ofproto_parser  # 解析器对象
         in_port = msg.match['in_port']  # 消息来的交换机的端口，即数据包进入交换机的端口
+
+        print("This is s", dpid)
 
         # 解析数据包，提取ARP、IPv4、IPv6、LLDP、ICMP、Ethernet协议的数据包
         pkt = packet.Packet(msg.data)
@@ -177,17 +187,18 @@ class MyController(app_manager.RyuApp):
             # 提取ARP包信息
             arp_src = arp_pkt.src_ip
             arp_dst = arp_pkt.dst_ip
-
+            print("This is ARP")
             print("src:", arp_src, " dst:", arp_pkt)
-
 
             # 获取路径
             path = self.get_path(self.ip2host[arp_src], self.ip2host[arp_dst])
+            print(path)
             
             # 确定当前交换机在路径中的位置并找到下一跳
             if dpid in path:
                 index = path.index('s%s' % dpid)  # 获取当前交换机在路径中的位置索引
-                out_port = self.graph[path[index]][path[index + 1]]['port']  # 获取下一跳交换机的端口号
+                next_hop = path[path.index(dpid) + 1]  # 下一跳
+                out_port = self.graph[dpid][next_hop]['port']  # 获取去往下一跳交换机的本交换机端口号
                 print('ARP Packet %s -> %s : port %s' % (path[index], path[index + 1], out_port))
 
                 actions.append(parser.OFPActionOutput(out_port))  # 根据上述获得信息创建动作对象
@@ -197,27 +208,25 @@ class MyController(app_manager.RyuApp):
 
                 self.add_flow(datapath, 1, match, actions)  # 添加流表项
 
-        # 处理IPv4数据包
-        if ipv4_pkt:
-            # 提取数据包信息
-            ipv4_src = ipv4_pkt.src
-            ipv4_dst = ipv4_pkt.dst
+        # # 处理ipv4数据包
+        # if ipv4:
+        #     # 提取数据包发送方和接收方ip地址
+        #     ipv4_src = ipv4_pkt.src
+        #     ipv4_dst = ipv4_pkt.dst
 
-            # 获取路径
-            path = self.get_path(self.ip2host[ipv4_src], self.ip2host[ipv4_dst])  # 获取从src到dst的最短路径
-
-            # 确定当前交换机在路径中的位置并找到下一跳
-            if dpid in path:
-                index = path.index('s%s' % dpid)  # 获取当前交换机在路径中的位置索引
-                out_port = self.graph[path[index]][path[index + 1]]['port']  # 获取下一跳交换机的端口号
-                print('iPv4 Packet %s -> %s : port %s' % (path[index], path[index + 1], out_port))
-
-                actions.append(parser.OFPActionOutput(out_port))  # 根据上述获得信息创建动作对象
-
-                match = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_IP,
-                                        ipv4_src=ipv4_src, ipv4_dst=ipv4_dst)  # 创建一个匹配条件，匹配 ARP 包的以太网类型、源 IP 和目的 IP
-
-                self.add_flow(datapath, 1, match, actions)  # 添加流表项
+        #     # 先进行真实ip和虚拟ip的转化
+        #     # 如果是路径上第一个交换机，此时一定是真实ip，所以做真实ip向虚拟ip的转化
+        #     if self.is_connect(self.ip_to_host[ipv4_src], dpid):
+        #         actions.append(parser.OFPActionSetField(ipv4_src=self.real2virtual[ipv4_src]))   # 修改表头参数
+        #         actions.append(parser.OFPActionSetField(ipv4_dst=self.real2virtual[ipv4_dst]))
+        #         print('Change SRC: %s(Real) -> %s(Virtual)' % (ipv4_src, self.real2virtual[ipv4_src]))
+        #         print('Change DST: %s(Real) -> %s(Virtual)' % (ipv4_dst, self.real2virtual[ipv4_dst]))
+        #     # 如果是路径上最后一个交换机，此时一定是虚拟ip，所以做虚拟ip向真实ip的转化
+        #     if self.is_connect(dpid, self.ip_to_host[ipv4_dst]):
+        #         actions.append(parser.OFPActionSetField(ipv4_src=self.virtual2real[ipv4_src]))
+        #         actions.append(parser.OFPActionSetField(ipv4_dst=self.virtual2real[ipv4_dst]))
+        #         print('Change SRC: %s(Virtual) -> %s(Real)' % (self.real_to_virtual[ipv4_src], ipv4_src))
+        #         print('Change DST: %s(Virtual) -> %s(Real)' % (self.real_to_virtual[ipv4_dst], ipv4_dst))
 
 
         #  最终发送PacketOut信息，将数据包转发出去
