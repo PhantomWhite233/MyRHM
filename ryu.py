@@ -233,8 +233,8 @@ class MyController(app_manager.RyuApp):
             path_length = len(path)
             cur_index = path.index(dpid)
             print("path_length: %s. cur_index: %s" %(path_length, cur_index))
-            res_src = real_src  # 最终的发送方ip地址
-            res_dst = real_dst  # 最终的接收方ip地址
+            res_src = ipv4_src  # 最终的发送方ip地址
+            res_dst = ipv4_dst  # 最终的接收方ip地址
             # 如果是路径上第一个交换机，直接做一次真实ip向虚拟ip的转化
             if cur_index == 1:
                 # 真实ip到虚拟ip的转化
