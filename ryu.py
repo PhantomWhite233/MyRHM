@@ -36,7 +36,7 @@ class MyController(app_manager.RyuApp):
             real_ip = self.real_ips[i]
             virtual_ip = self.virtual_ips[i]
             self.real2virtual[real_ip] = virtual_ip
-            self.real2virtual[virtual_ip] = real_ip
+            self.virtual2real[virtual_ip] = real_ip
 
         print("real to virtual:")
         print(self.real2virtual)
