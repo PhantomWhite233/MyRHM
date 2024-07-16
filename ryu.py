@@ -274,6 +274,3 @@ class MyController(app_manager.RyuApp):
         out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
-
-        # 清空流表
-        self.empty_flow_table(datapath)
