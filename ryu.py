@@ -24,7 +24,7 @@ class MyController(app_manager.RyuApp):
 
         self.datapaths = {}  # 管理的所有交换机
         self.real2virtual = {}  # 真实地址到虚拟地址的映射
-        self.virtual2real = []  # 虚拟地址到真实地址的映射
+        self.virtual2real = {}  # 虚拟地址到真实地址的映射
         self.real2host = {}  # 真实ip和主机的映射
         
         self.graph = nx.read_gml('MyTopo.gml')  # 读取网络拓扑结构
@@ -222,7 +222,7 @@ class MyController(app_manager.RyuApp):
             path = self.get_path(self.real2host[ipv4_src], self.real2host[ipv4_dst])
             path_length = len(path)
             cur_index = path.index(dpid)
-            print("path_length: %s. cur_index: %s", path_length, cur_index)
+            print("path_length: %s. cur_index: %s" %(path_length, cur_index))
             # 如果是路径上第一个交换机，此时一定是真实ip，所以做真实ip向虚拟ip的转化
             if cur_index == 1:
                 actions.append(parser.OFPActionSetField(ipv4_src=self.real2virtual[ipv4_src]))   # 修改表头参数
