@@ -1,4 +1,5 @@
 graph [
+  directed 1
   node [
     id 0
     label "h1"
@@ -43,7 +44,7 @@ graph [
   edge [
     source 1
     target 4
-    port 2
+    port 1
   ]
   edge [
     source 2
@@ -57,12 +58,42 @@ graph [
   ]
   edge [
     source 4
+    target 0
+    port 1
+  ]
+  edge [
+    source 4
+    target 1
+    port 2
+  ]
+  edge [
+    source 4
     target 5
+    port 10
+  ]
+  edge [
+    source 5
+    target 4
     port 11
   ]
   edge [
     source 5
+    target 2
+    port 1
+  ]
+  edge [
+    source 5
     target 6
+    port 12
+  ]
+  edge [
+    source 6
+    target 5
     port 13
+  ]
+  edge [
+    source 6
+    target 3
+    port 1
   ]
 ]

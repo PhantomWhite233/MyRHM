@@ -113,12 +113,6 @@ class MyController(app_manager.RyuApp):
 
         # print('shortPath: %s -> %s: %s' % (src, dst, self.paths[src][dst]))
         return self.paths[src][dst]
-    
-    # 函数意义：
-    #       计算
-    def is_connect(self, u, v):
-        if not self.edges[u][v]:
-            self.edges[u][v] = self.graph.has_edge(u, v)
 
     # 触发时机：
     #       在交换机和控制器完成握手时触发，此时控制器正处于配置交换机状态
@@ -189,10 +183,12 @@ class MyController(app_manager.RyuApp):
 
         # 处理ARP数据包
         if arp_pkt:
+            print("This is ARP")
+
             # 提取ARP包信息
             arp_src = arp_pkt.src_ip
             arp_dst = arp_pkt.dst_ip
-            print("This is ARP")
+            
             print("src:", arp_src, " dst:", arp_pkt)
 
             # 获取路径
@@ -215,6 +211,8 @@ class MyController(app_manager.RyuApp):
 
         # 处理ipv4数据包
         if ipv4_pkt:
+            print("This is ipv4")
+            
             # 提取数据包发送方和接收方ip地址
             ipv4_src = ipv4_pkt.src
             ipv4_dst = ipv4_pkt.dst
@@ -227,7 +225,6 @@ class MyController(app_manager.RyuApp):
             if ipv4_dst in self.virtual_ips:
                 real_dst = self.virtual_to_real[ipv4_dst]
 
-            print("This is ipv4")
             print("src:", real_src, " dst:", real_dst)
 
             # 先进行真实ip和虚拟ip的转化
