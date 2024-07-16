@@ -39,9 +39,9 @@ class MyController(app_manager.RyuApp):
             self.real2virtual["virtual_ip"] = real_ip
 
         # 测试用：初始化ip到host的映射
-        for v, data in self.graph.nodes(data=True):
-            if data['type'] == 'host':
-                self.ip2host[data['ip']] = v
+        for node, data in graph.nodes(data=True):
+            if node[0] == 'h':
+                self.real2host[data["ip"]] = node
 
     # 函数意义：
     #       清空对应交换机流表
@@ -191,7 +191,7 @@ class MyController(app_manager.RyuApp):
             print("src:", arp_src, " dst:", arp_pkt)
 
             # 获取路径
-            path = self.get_path(self.ip2host[arp_src], self.ip2host[arp_dst])
+            path = self.get_path(self.real2host[arp_src], self.real2host[arp_dst])
             print(path)
             
             # 确定当前交换机在路径中的位置并找到下一跳
