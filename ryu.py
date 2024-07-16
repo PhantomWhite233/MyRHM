@@ -222,9 +222,9 @@ class MyController(app_manager.RyuApp):
             # 先将ip锁定为真实ip
             real_src = ipv4_src
             real_dst = ipv4_dst
-            if ipv4_src in self.virtual_ip:
+            if ipv4_src in self.virtual_ips:
                 real_src = self.virtual_to_real[ipv4_src]
-            if ipv4_dst in self.virtual_ip:
+            if ipv4_dst in self.virtual_ips:
                 real_dst = self.virtual_to_real[ipv4_dst]
 
             print("This is ipv4")
