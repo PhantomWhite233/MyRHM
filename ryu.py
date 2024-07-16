@@ -39,7 +39,7 @@ class MyController(app_manager.RyuApp):
             self.real2virtual["virtual_ip"] = real_ip
 
         # 测试用：初始化ip到host的映射
-        for node, data in graph.nodes(data=True):
+        for node, data in self.graph.nodes(data=True):
             if node[0] == 'h':
                 self.real2host[data["ip"]] = node
 
