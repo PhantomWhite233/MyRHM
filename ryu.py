@@ -22,6 +22,7 @@ class MyController(app_manager.RyuApp):
         self.real_ips = deepcopy(const.REAL_IPS)  # 真实ip地址池
         self.virtual_ips = deepcopy(const.VIRTUAL_IPS)  # 虚拟ip地址池
 
+        # TODO: 考虑一下datapaths还需要吗
         self.datapaths = {}  # 管理的所有交换机
         self.real2virtual = {}  # 真实地址到虚拟地址的映射
         self.virtual2real = {}  # 虚拟地址到真实地址的映射
