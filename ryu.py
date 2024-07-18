@@ -234,9 +234,9 @@ class MyController(app_manager.RyuApp):
             real_src = ipv4_src
             real_dst = ipv4_dst
             if ipv4_src in self.virtual_ips:
-                real_src = self.virtual2real[ipv4_src]
+                real_src = virtual2real[ipv4_src]
             if ipv4_dst in self.virtual_ips:
-                real_dst = self.virtual2real[ipv4_dst]
+                real_dst = virtual2real[ipv4_dst]
 
             print("src:", real_src, " dst:", real_dst)
 
@@ -251,8 +251,8 @@ class MyController(app_manager.RyuApp):
             # 如果是路径上第一个交换机，直接做一次真实ip向虚拟ip的转化
             if cur_index == 1:
                 # 真实ip到虚拟ip的转化
-                res_src = self.real2virtual[res_src]
-                res_dst = self.real2virtual[res_dst]
+                res_src = real2virtual[res_src]
+                res_dst = real2virtual[res_dst]
                 # 修改表头参数
                 actions.append(parser.OFPActionSetField(ipv4_src=res_src))
                 actions.append(parser.OFPActionSetField(ipv4_dst=res_dst))
@@ -261,13 +261,13 @@ class MyController(app_manager.RyuApp):
             # 如果是路径上最后一个交换机，直接做一次虚拟ip向真实ip的转化
             if cur_index == path_length - 2:
                 # 虚拟ip到真实ip的转化
-                res_src = self.virtual2real[res_src]
-                res_dst = self.virtual2real[res_dst]
+                res_src = virtual2real[res_src]
+                res_dst = virtual2real[res_dst]
                 # 修改表头参数
                 actions.append(parser.OFPActionSetField(ipv4_src=res_src))
                 actions.append(parser.OFPActionSetField(ipv4_dst=res_dst))
-                print('Change SRC: %s(Virtual) -> %s(Real)' % (self.real2virtual[res_src], res_src))
-                print('Change DST: %s(Virtual) -> %s(Real)' % (self.real2virtual[res_dst], res_dst))
+                print('Change SRC: %s(Virtual) -> %s(Real)' % (real2virtual[res_src], res_src))
+                print('Change DST: %s(Virtual) -> %s(Real)' % (real2virtual[res_dst], res_dst))
 
             # 然后进行转发工作的安排，查找下一跳和跳出端口
             next_hop = path[path.index(dpid) + 1]
