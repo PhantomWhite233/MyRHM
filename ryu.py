@@ -112,6 +112,7 @@ class MyController(app_manager.RyuApp):
                 with FileLock("real2virtual.json.lock"):
                     with open('real2virtual.json', 'r') as f:
                         real2virtual = json.load(f)
+                break
             except FileNotFoundError:
                 print("real2virtual.json is Occupied")
         for key, value in real2virtual.items():

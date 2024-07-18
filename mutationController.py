@@ -36,5 +36,6 @@ while 1:
             with FileLock("real2virtual.json.lock"):
                 with open('real2virtual.json', 'w') as f:
                     json.dump(real2virtual_json, f)
+            break
         except:
             print("real2virtual.json is Occupied")
