@@ -115,7 +115,7 @@ class MyController(app_manager.RyuApp):
                 break
             except FileNotFoundError:
                 print("real2virtual.json is Occupied")
-        print(real2virtual)
+        real2virtual = json.loads(real2virtual)
         for key, value in real2virtual.items():
             virtual2real[value] = key
         return real2virtual, virtual2real
