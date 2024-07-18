@@ -1,6 +1,6 @@
 import json
 import random
-from filelock import FileLock
+import filelock
 import networkx as nx
 import const
 from copy import deepcopy
