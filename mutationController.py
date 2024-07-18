@@ -1,4 +1,4 @@
-import filelock
+from filelock import FileLock
 import const
 import random
 import json
