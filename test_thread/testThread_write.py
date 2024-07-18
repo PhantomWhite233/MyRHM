@@ -1,6 +1,6 @@
 import json
 import time
-from filelock import FileLock
+import filelock
 
 shared_data = {
     'key1': 'value1',
@@ -10,7 +10,7 @@ shared_data = {
 while True:
     try:
         print("try to writing...")
-        with fileLock("shared_data.json.lock"):
+        with filelock("shared_data.json.lock"):
             with open('shared_data.json', 'w') as f:
                 json.dump(shared_data, f, indent=4)  # 写入JSON文件，并设置缩进以便于阅读
         print("writing successfully")
