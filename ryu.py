@@ -1,4 +1,6 @@
+import json
 import random
+import filelock
 import networkx as nx
 import const
 from copy import deepcopy
@@ -24,24 +26,10 @@ class MyController(app_manager.RyuApp):
 
         # TODO: 考虑一下datapaths还需要吗
         self.datapaths = {}  # 管理的所有交换机
-        self.real2virtual = {}  # 真实地址到虚拟地址的映射
-        self.virtual2real = {}  # 虚拟地址到真实地址的映射
         self.real2host = {}  # 真实ip和主机的映射
         
         self.graph = nx.read_gml('MyTopo.gml')  # 读取网络拓扑结构
         self.paths = defaultdict(lambda: defaultdict(list))  # 存储原地址到目的地址的路径
-        
-        # 测试用：真实ip和虚拟ip的映射
-        for i in range(4):
-            real_ip = self.real_ips[i]
-            virtual_ip = self.virtual_ips[i]
-            self.real2virtual[real_ip] = virtual_ip
-            self.virtual2real[virtual_ip] = real_ip
-
-        print("real to virtual:")
-        print(self.real2virtual)
-        print("virtual to real:")
-        print(self.virtual2real)
 
         # 测试用：初始化ip到host的映射
         for node, data in self.graph.nodes(data=True):
@@ -114,6 +102,22 @@ class MyController(app_manager.RyuApp):
         # print('shortPath: %s -> %s: %s' % (src, dst, self.paths[src][dst]))
         return self.paths[src][dst]
 
+    # 函数意义：
+    #       读取真实IP到虚拟IP的映射文件，返回映射数组
+    def get_ipMap():
+        real2virtual = {}
+        virtual2real = {}
+        while 1:
+            try:
+                with filelock("real2virtual.json.lock"):
+                    with open('real2virtual.json', 'r') as f:
+                        real2virtual = json.load(f)
+            except FileNotFoundError:
+                print("real2virtual.json is Occupied")
+        for key, value in real2virtual.items():
+            virtual2real[value] = key
+        return real2virtual, virtual2real
+
     # 触发时机：
     #       在交换机和控制器完成握手时触发，此时控制器正处于配置交换机状态
     # 函数意义：
@@ -159,6 +163,13 @@ class MyController(app_manager.RyuApp):
 
         # 初始化动作列表
         actions = []
+
+        # 拿到真实ip和虚拟ip之间的映射关系
+        real2virtual, virtual2real = self.get_ipMap()
+        print("real to virtual:")
+        print(real2virtual)
+        print("virtual to real:")
+        print(virtual2real)
 
         # 忽略LLDP和IPv6数据包
         if lldp_pkt:
