@@ -1,6 +1,6 @@
 import json
 import random
-import filelock
+from filelock import FileLock
 import networkx as nx
 import const
 from copy import deepcopy
@@ -109,7 +109,7 @@ class MyController(app_manager.RyuApp):
         virtual2real = {}
         while 1:
             try:
-                with filelock("real2virtual.json.lock"):
+                with FileLock("real2virtual.json.lock"):
                     with open('real2virtual.json', 'r') as f:
                         real2virtual = json.load(f)
             except FileNotFoundError:

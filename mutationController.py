@@ -1,4 +1,4 @@
-import filelock
+from filelock import FileLock
 import const
 import random
 import json
@@ -15,7 +15,7 @@ for i in range(const.BLOCK_SIZE):
 
 # 创建并存储
 real2virtual_json = json.dumps(real2virtual)
-with filelock("real2virtual.json.lock"):
+with FileLock("real2virtual.json.lock"):
     with open('real2virtual.json', 'w') as f:
         json.dump(real2virtual_json, f)
 
@@ -33,7 +33,7 @@ while 1:
     real2virtual_json = json.dumps(real2virtual)
     while 1:
         try:
-            with filelock("real2virtual.json.lock"):
+            with FileLock("real2virtual.json.lock"):
                 with open('real2virtual.json', 'w') as f:
                     json.dump(real2virtual_json, f)
         except:
