@@ -104,7 +104,7 @@ class MyController(app_manager.RyuApp):
 
     # 函数意义：
     #       读取真实IP到虚拟IP的映射文件，返回映射数组
-    def get_ipMap():
+    def get_ipMap(self):
         real2virtual = {}
         virtual2real = {}
         while 1:
