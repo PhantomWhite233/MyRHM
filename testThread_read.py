@@ -8,7 +8,7 @@ def reader():
             with FileLock("shared_data.json.lock"):
                 with open('shared_data.json', 'r') as f:
                     shared_data = json.load(f)  # 从JSON文件读取数据
-                    num = int(input("是否保持读取"))
+                    num = int(input("continue to read..."))
                     if num == 0:
                         return shared_data
                     elif num == 1:
@@ -18,7 +18,7 @@ def reader():
 
 
 while 1:
-    print("0-不读 1-读")
+    print("0-wait 1-to read")
     num=int(input())
     if num == 0:
         continue

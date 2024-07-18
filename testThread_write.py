@@ -9,11 +9,11 @@ shared_data = {
 
 while True:
     try:
-        print("尝试读取")
+        print("try to writing...")
         with FileLock("shared_data.json.lock"):
             with open('shared_data.json', 'w') as f:
                 json.dump(shared_data, f, indent=4)  # 写入JSON文件，并设置缩进以便于阅读
-        print("读取成功")
+        print("writing successfully")
     except:
         print("other programme is reading data")
     print("Data written to shared_data.json")
