@@ -30,7 +30,6 @@ class MyController(app_manager.RyuApp):
         self.graph = nx.read_gml('MyTopo.gml')  # 读取网络拓扑结构
         self.paths = defaultdict(lambda: defaultdict(list))  # 存储原地址到目的地址的路径
         
-        
         # 测试用：真实ip和虚拟ip的映射
         for i in range(4):
             real_ip = self.real_ips[i]
